@@ -56,12 +56,27 @@ class Cart(models.Model):
 
     created = models.DateTimeField("Дата создания заказа", default=timezone.now, null=False, blank=False)
 
+    active = models.BooleanField("Статус активности", default=True)
+
     class Meta:
-        verbose_name = "Фото"
-        verbose_name_plural = "Фото"
+        verbose_name = "Корзина"
+        verbose_name_plural = "Корзины"
 
     def __str__(self):
         return f"{self.id} {self.ru}"
+
+
+class Order(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+
+    created = models.DateTimeField("Дата создания заказа", default=timezone.now, null=False, blank=False)
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+    def __str__(self):
+        return f"{self.id}"
 
 
 class Message(models.Model):
