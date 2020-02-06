@@ -11,9 +11,11 @@ class Product(models.Model):
 
     photo = models.ImageField("Фото", upload_to="media/common/")
 
+    active = models.BooleanField("Статус активности", default=True)
+
     class Meta:
-        verbose_name = "Фото"
-        verbose_name_plural = "Фото"
+        verbose_name = "Продукт"
+        verbose_name_plural = "Продукты"
 
     def __str__(self):
         return f"{self.id} {self.ru}"
@@ -24,6 +26,8 @@ class Category(models.Model):
     uz = models.CharField("Название на узбекском", max_length=256)
 
     products = models.ManyToManyField(Product)
+
+    active = models.BooleanField("Статус активности", default=True)
 
     photo = models.ImageField("Фото", upload_to="media/common/")
 
@@ -38,8 +42,13 @@ class Category(models.Model):
 class TelegramUser(models.Model):
     telegramId = models.PositiveIntegerField("ID Telegram")
 
-    phone = models.PositiveIntegerField("Номер телефона")
+    phone = models.PositiveIntegerField("Номер телефона", null=True, blank=True)
     username = models.CharField("Username", max_length=256)
+
+    language = models.CharField("Язык", max_length=5, default="ru")
+    full_name = models.CharField("Name", max_length=255, default="", null=False)
+
+    created_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         verbose_name = "Пользователь"

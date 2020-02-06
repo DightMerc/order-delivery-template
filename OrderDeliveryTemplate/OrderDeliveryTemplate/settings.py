@@ -25,7 +25,7 @@ SECRET_KEY = 'z($kfv10e^pxz!8*3(c=5v8@no!z^j$#w(rrokkb3wp6q06ykz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["lumencorp.net", "0.0.0.0", "localhost"]
+ALLOWED_HOSTS = ["lumencorp.net", "0.0.0.0", "localhost", "127.0.0.1"]
 
 
 # Application definition
