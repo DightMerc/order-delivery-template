@@ -19,6 +19,8 @@ class Product(models.Model):
 
     active = models.BooleanField("Статус активности", default=True)
 
+    price = models.PositiveIntegerField("Цена")
+
     class Meta:
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
@@ -78,7 +80,7 @@ class Cart(models.Model):
         verbose_name_plural = "Корзины"
 
     def __str__(self):
-        return f"{self.id} {self.ru}"
+        return f"{self.id} {self.user}"
 
 
 class Order(models.Model):

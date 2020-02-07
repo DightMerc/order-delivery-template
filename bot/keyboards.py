@@ -13,21 +13,43 @@ def LanguageKeyboard():
 )
 
 
-def MenuKeyboard(user):
+def MenuKeyboard(user, cartCount):
     lan = client.getUserLanguage(user)
     if lan == "ru":
         return InlineKeyboardMarkup().row(
             InlineKeyboardButton('🔍 Меню', callback_data="menu"),
-            InlineKeyboardButton('📥 Корзина', callback_data="cart")
+            InlineKeyboardButton('📥 Корзина' if cartCount==0 else f'📥 Корзина ( {cartCount} )', callback_data="cart")
             ).add(
             ).add(InlineKeyboardButton('🌏 О нас', callback_data="about")
             ).add(InlineKeyboardButton('🇺🇿 Ўзбек тили', callback_data="uz"))
     else:
         return InlineKeyboardMarkup().row(
             InlineKeyboardButton('🔍 Меню', callback_data="menu"),
-            InlineKeyboardButton('📥 Корзина', callback_data="cart")
+            InlineKeyboardButton('📥 Корзина' if cartCount==0 else f'📥 Корзина ( {cartCount} )', callback_data="cart")
             ).add(InlineKeyboardButton('🌏 О нас', callback_data="about")
             ).add(InlineKeyboardButton('🇷🇺 Русский', callback_data="ru"))
+
+
+def PaginationKeyboards(user, current, prevPage, nextPage, count):
+    print(f"\n\n{prevPage} {current} {nextPage}\n\n")
+
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('⬅️', callback_data=prevPage),
+            InlineKeyboardButton(f'{current}/{count}', callback_data="empty"),
+            InlineKeyboardButton('➡️', callback_data=nextPage)
+
+            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data="clear")
+            ).add(InlineKeyboardButton('Сделать заказ', callback_data="order"))
+    else:
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('⬅️', callback_data=prevPage),
+            InlineKeyboardButton(f'{current}/{count}', callback_data="empty"),
+            InlineKeyboardButton('➡️', callback_data=nextPage)
+
+            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data="clear")
+            ).add(InlineKeyboardButton('Сделать заказ', callback_data="order"))
 
 
 def CategoriesKeyboard(user):
@@ -53,7 +75,7 @@ def ProductsKeyboard(user, category):
 
     for product in client.GetProductsByCatt(category):
         buttons.append(InlineKeyboardButton(product.ru if lan == "ru" else product.uz, callback_data=f"{product.id}"))
-    return InlineKeyboardMarkup(inline_keyboard=build_products_menu(buttons, 2, header, footer))
+    return InlineKeyboardMarkup(inline_keyboard=build_products_menu(buttons, 1, header, footer))
 
 
 def build_products_menu(buttons,
@@ -68,6 +90,17 @@ def build_products_menu(buttons,
             menu.append([btn])
     return menu
 
+
+def CurrentProductKeyboard(user, product, category):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().add(
+            InlineKeyboardButton('📥 Добавить в корзину', callback_data=f"{product}")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data=f"back {category}"))
+    else:
+        return InlineKeyboardMarkup().add(
+            InlineKeyboardButton('📥 Добавить в корзину', callback_data=f"{product}")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data=f"back {category}"))
 
 # if __name__ == "__main__":
 #     CategoriesKeyboard('ru')

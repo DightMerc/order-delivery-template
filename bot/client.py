@@ -1,7 +1,6 @@
 import os, sys
 import django
 from django.shortcuts import get_object_or_404
-from django.core.paginator import Paginator
 import shutil
 
 
@@ -108,4 +107,39 @@ def GetPhotoId(url):
         id = bot_models.Photo.objects.get(photoUrl=url).fileId
         return id
     except Exception as e:
+        return False
+
+
+def addToCart(user, product):
+    user = bot_models.TelegramUser.objects.get(telegramId=user)
+
+    if bot_models.Cart.objects.filter(user=user, active=True).count()!=0:
+        cart = bot_models.Cart.objects.filter(active=True).get(user=user)
+        cart.products.add(product)
+    else:
+        cart = bot_models.Cart()
+        cart.user = user
+        cart.active = True
+        cart.save()
+
+        cart.products.add(product)
+
+    return True
+
+
+def getCartCount(user):
+    user = bot_models.TelegramUser.objects.get(telegramId=user)
+
+    if bot_models.Cart.objects.filter(user=user, active=True).count()!=0:
+        return bot_models.Cart.objects.filter(active=True).get(user=user).products.all().count()
+    else:
+        return 0
+
+
+def getCartProducts(user):
+    user = bot_models.TelegramUser.objects.get(telegramId=user)
+
+    if bot_models.Cart.objects.filter(user=user, active=True).count()!=0:
+        return bot_models.Cart.objects.filter(active=True).get(user=user).products.all()
+    else:
         return False
