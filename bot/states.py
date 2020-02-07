@@ -6,7 +6,7 @@ class User(StatesGroup):
     main = State()
     menu = State() 
     subMenu = State()
-    priceSet = State()
+    productShow = State()
     add_info = State()
     contact = State()
     edit = State()

@@ -22,6 +22,9 @@ import os
 import aioredis
 
 
+mediaLink = "http://127.0.0.1:8000/"
+
+
 logging.basicConfig(format=u'%(filename)+13s [ LINE:%(lineno)-4s] %(levelname)-8s [%(asctime)s] %(message)s',
                      level=logging.DEBUG)
 
@@ -122,7 +125,41 @@ async def category_handler(callback_query: types.CallbackQuery, state: FSMContex
         markup = keyboards.ProductsKeyboard(user, data)
         await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
 
+
+@dp.callback_query_handler(state=states.User.subMenu)
+async def subMenu_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+
+    data = callback_query.data
+
+    await bot.answer_callback_query(callback_query.id)
+
+    if "back" in data:
+        await states.User.main.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        text = Messages(user)['subMenu']
+        markup = keyboards.ProductsKeyboard(user, int(data.replace("back ", "")))
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+    else:
+        await states.User.productShow.set()
+
+        await bot.send_chat_action(user, action="typing")
     
+        text = Messages(user)['subMenu']
+        product = client.GetProduct(data)
+        markup = None
+
+        file = InputFile.from_url(mediaLink + product.photo.url)
+        if client.GetPhotoId(product.photo.url):
+            file = client.GetPhotoId(product.photo.url)
+            await bot.send_photo(user, file, caption=text, reply_markup=markup)
+        else:
+            fileId = await bot.send_photo(user, file, caption=text, reply_markup=markup)
+            client.SetPhotoId(product.photo.url, fileId.photo[0].file_unique_id)
+        # markup = keyboards.ProductsKeyboard(user, data)
+        # await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
 
 
 async def shutdown(dispatcher: Dispatcher):

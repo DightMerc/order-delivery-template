@@ -79,3 +79,33 @@ def GetCategories():
 def GetProductsByCatt(category):
 
     return bot_models.Category.objects.get(pk=category).products.all()
+
+
+def GetProduct(product):
+
+    return bot_models.Product.objects.get(pk=product)
+
+
+def SetPhotoId(url, id):
+
+    if bot_models.Photo.objects.filter(photoUrl=url).count() != 0:
+        if photo == bot_models.Photo.objects.get(photoUrl=url).fileId != None:
+            return photo.fileId
+        else:
+            photo.fileId = id
+            photo.save()
+
+            return id
+    else:
+        photo = bot_models.Photo()
+        photo.fileId = id
+        photo.photoUrl = url
+        photo.save()
+
+
+def GetPhotoId(url):
+    try:
+        id = bot_models.Photo.objects.get(photoUrl=url).fileId
+        return id
+    except Exception as e:
+        return False

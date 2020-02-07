@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TelegramUser, Product, Settings, Category, Cart, Order, PaySystem, Message
+from .models import TelegramUser, Product, Settings, Category, Cart, Order, PaySystem, Message, Photo
 
 
 @admin.register(TelegramUser)
@@ -7,6 +7,13 @@ class TelegramUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'telegramId', 'username')
     ordering = ('id',)
     search_fields = ('id', 'telegramId', 'username')
+
+
+@admin.register(Photo)
+class PhotoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'photoUrl', 'fileId')
+    ordering = ('id',)
+    search_fields = ('id', 'photoUrl', 'fileId')
 
 
 @admin.register(Message)

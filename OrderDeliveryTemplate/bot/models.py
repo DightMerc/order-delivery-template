@@ -2,6 +2,12 @@ from django.db import models
 from django.utils import timezone
 
 
+class Photo(models.Model):
+
+    photoUrl = models.CharField("url", max_length=512)
+    fileId = models.CharField("fileId", max_length=256, null=True, blank=True)
+
+
 class Product(models.Model):
     ru = models.CharField("Название на русском", max_length=256)
     uz = models.CharField("Название на узбекском", max_length=256)

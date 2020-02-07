@@ -49,7 +49,7 @@ def ProductsKeyboard(user, category):
     buttons = []
     header = []
     footer = []
-    footer.append(InlineKeyboardButton('🏡 Назад' if lan == "ru" else "🏡 Ортга", callback_data="home"))
+    footer.append(InlineKeyboardButton('🏡 Назад' if lan == "ru" else "🏡 Ортга", callback_data=f"back {category}"))
 
     for product in client.GetProductsByCatt(category):
         buttons.append(InlineKeyboardButton(product.ru if lan == "ru" else product.uz, callback_data=f"{product.id}"))
