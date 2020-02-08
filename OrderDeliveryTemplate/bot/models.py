@@ -54,7 +54,9 @@ class TelegramUser(models.Model):
     username = models.CharField("Username", max_length=256)
 
     language = models.CharField("Язык", max_length=5, default="ru")
-    full_name = models.CharField("Name", max_length=255, default="", null=False)
+    full_name = models.CharField("Имя в телеграм", max_length=255, default="", null=False)
+
+    readlName = models.CharField("Имя", max_length=255, default="", null=True, blank=True)
 
     created_date = models.DateTimeField(default=timezone.now)
 
@@ -84,9 +86,26 @@ class Cart(models.Model):
 
 
 class Order(models.Model):
+    user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
 
     created = models.DateTimeField("Дата создания заказа", default=timezone.now, null=False, blank=False)
+
+    delivery = models.BooleanField("Статус активности", default=True)
+
+    geoX = models.IntegerField("Локация X", null=True, blank=True)
+    geoY = models.IntegerField("Локация X", null=True, blank=True)
+
+    time = models.CharField("Время", max_length=256, null=False, blank=False)
+
+    click = models.BooleanField("Оплачено Click", default=True)
+    payMe = models.BooleanField("Оплачено PayMe", default=True)
+    cash = models.BooleanField("Оплачено наличными", default=True)
+
+    active = models.BooleanField("Подтвержден", default=True)
+
+    activated = models.DateTimeField("Дата подтверждения заказа", default=None, null=True, blank=True)
 
     class Meta:
         verbose_name = "Заказ"

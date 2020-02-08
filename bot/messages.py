@@ -15,5 +15,7 @@ def Messages(user):
         'descriptionProduct': client.getMessage(5, lan),
         'productAdded': client.getMessage(6, lan),
         'cartEmpty': client.getMessage(7, lan),
+        'productRemoved': client.getMessage(8, lan),
+        'name': client.getMessage(9, lan),
 
     }

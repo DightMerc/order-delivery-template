@@ -37,18 +37,18 @@ def PaginationKeyboards(user, current, prevPage, nextPage, count):
     if lan == "ru":
         return InlineKeyboardMarkup().row(
             InlineKeyboardButton('⬅️', callback_data=prevPage),
-            InlineKeyboardButton(f'{current}/{count}', callback_data="empty"),
+            InlineKeyboardButton(f'{current + 1}/{count}', callback_data="empty"),
             InlineKeyboardButton('➡️', callback_data=nextPage)
 
-            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data="clear")
+            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data=f"clear {current}")
             ).add(InlineKeyboardButton('Сделать заказ', callback_data="order"))
     else:
         return InlineKeyboardMarkup().row(
             InlineKeyboardButton('⬅️', callback_data=prevPage),
-            InlineKeyboardButton(f'{current}/{count}', callback_data="empty"),
+            InlineKeyboardButton(f'{current + 1}/{count}', callback_data="empty"),
             InlineKeyboardButton('➡️', callback_data=nextPage)
 
-            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data="clear")
+            ).add(InlineKeyboardButton('✖️ Убрать из корзины', callback_data=f"clear {current}")
             ).add(InlineKeyboardButton('Сделать заказ', callback_data="order"))
 
 

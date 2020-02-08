@@ -108,9 +108,8 @@ async def main_handler(callback_query: types.CallbackQuery, state: FSMContext):
 
         products = client.getCartProducts(user)
         if products:
-            pagination = Paginator(products, 1)
 
-            product = pagination.get_page(1)[0]
+            product = products[0]
 
             lan = client.getUserLanguage(user)
 
@@ -119,7 +118,7 @@ async def main_handler(callback_query: types.CallbackQuery, state: FSMContext):
             else:
                 text = Messages(user)['descriptionProduct'].format(product.uz, product.uzDescription, product.price)
 
-            markup = keyboards.PaginationKeyboards(user, 1, pagination.num_pages, 2, pagination.num_pages)
+            markup = keyboards.PaginationKeyboards(user, 0, products.count() - 1 , 1, products.count())
 
             file = InputFile.from_url(mediaLink + product.photo.url)
             if client.GetPhotoId(product.photo.url):
@@ -132,46 +131,115 @@ async def main_handler(callback_query: types.CallbackQuery, state: FSMContext):
             await bot.delete_message(user, callback_query.message.message_id)
             
         else:
+            await states.User.main.set()
+            
             text = Messages(user)['cartEmpty']
-            markup = keyboards.CategoriesKeyboard(user)
+            markup = keyboards.MenuKeyboard(user, 0)
             await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
 
 
-# @dp.callback_query_handler(state=states.User.cart)
-# async def category_handler(callback_query: types.CallbackQuery, state: FSMContext):
-#     user = callback_query.from_user.id
+@dp.callback_query_handler(state=states.User.cart)
+async def category_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
 
-#     data = callback_query.data
+    data = callback_query.data
 
-#     await bot.answer_callback_query(callback_query.id)
 
-#     if str(data).isdigit():
-#         data = int(data) - 1
-#         products = client.getCartProducts(user)
-#         # pagination = Paginator(products, 1)
+    if str(data).isdigit():
+        await bot.answer_callback_query(callback_query.id)
 
-#         product = products[data]
-#         lan = client.getUserLanguage(user)
+        data = int(data)
+        products = client.getCartProducts(user)
+        # pagination = Paginator(products, 1)
 
-#         if lan=="ru":
-#             text = Messages(user)['descriptionProduct'].format(product.ru, product.ruDescription, product.price)
-#         else:
-#             text = Messages(user)['descriptionProduct'].format(product.uz, product.uzDescription, product.price)
+        product = products[data]
+        lan = client.getUserLanguage(user)
 
-#         markup = keyboards.PaginationKeyboards(user,
-#          data,
-#          products.count() if data - 1 != 0 else data - 1 ,
-#          1 if data + 1 != products.count() else data + 1, 
-#          products.count()
-#          )
+        if lan=="ru":
+            text = Messages(user)['descriptionProduct'].format(product.ru, product.ruDescription, product.price)
+        else:
+            text = Messages(user)['descriptionProduct'].format(product.uz, product.uzDescription, product.price)
 
-#         file = InputFile.from_url(mediaLink + product.photo.url)
-#         if client.GetPhotoId(product.photo.url):
-#             file = client.GetPhotoId(product.photo.url)
-#             await bot.send_photo(user, file, caption=text, reply_markup=markup)
+        markup = keyboards.PaginationKeyboards(user,
+         data,
+         products.count() - 1 if data - 1 == -1 else data - 1 ,
+         0 if data + 1 == products.count() else data + 1, 
+         products.count()
+         )
 
-#         await bot.delete_message(user, callback_query.message.message_id)
+        file = InputFile.from_url(mediaLink + product.photo.url)
+        if client.GetPhotoId(product.photo.url):
+            file = client.GetPhotoId(product.photo.url)
+            await bot.send_photo(user, file, caption=text, reply_markup=markup)
 
+        await bot.delete_message(user, callback_query.message.message_id)
+        
+    elif "clear" in str(data):
+        current = int(data.replace("clear ", ""))
+        products = client.getCartProducts(user)
+        product = products[current]
+
+        await bot.answer_callback_query(callback_query.id, Messages(user)['productRemoved'].replace("{}", product.ru if client.getUserLanguage(user)=="ru" else product.uz))
+
+        client.removeFromCart(user, product)
+
+        products = client.getCartProducts(user)
+
+        if products.count()!=0:
+            try:
+                data = current
+                product = products[data]
+            except Exception as e:
+                data = current - 1
+                product = products[data]
+
+            lan = client.getUserLanguage(user)
+
+            if lan=="ru":
+                text = Messages(user)['descriptionProduct'].format(product.ru, product.ruDescription, product.price)
+            else:
+                text = Messages(user)['descriptionProduct'].format(product.uz, product.uzDescription, product.price)
+
+            markup = keyboards.PaginationKeyboards(user,
+            data,
+            products.count() - 1 if data - 1 == -1 else data - 1 ,
+            0 if data + 1 == products.count() else data + 1, 
+            products.count()
+            )
+
+            file = InputFile.from_url(mediaLink + product.photo.url)
+            if client.GetPhotoId(product.photo.url):
+                file = client.GetPhotoId(product.photo.url)
+                await bot.send_photo(user, file, caption=text, reply_markup=markup)
+
+            await bot.delete_message(user, callback_query.message.message_id)
+        else:
+            await states.User.main.set()
+
+            text = Messages(user)['cartEmpty']
+            markup = keyboards.MenuKeyboard(user, 0)
+            await bot.send_message(user, text, reply_markup=markup)
+            await bot.delete_message(user, callback_query.message.message_id)
+
+    elif data == "empty":
+        await bot.answer_callback_query(callback_query.id)
+
+    elif data = "order":
+        await states.Order.started.set()
+
+        client.createOrder(user)
+
+        text = Messages(user)['name']
+        markup = None
+        await bot.send_message(user, text, reply_markup=markup)
+        await bot.delete_message(user, callback_query.message.message_id)
+
+
+@dp.message_handler(state=states.Order.started)
+async def process_start_command(message: types.Message, state: FSMContext):
+    user = message.from_user.id
+
+    name = text
 
 @dp.callback_query_handler(state=states.User.menu)
 async def category_handler(callback_query: types.CallbackQuery, state: FSMContext):

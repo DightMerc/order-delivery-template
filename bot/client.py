@@ -143,3 +143,28 @@ def getCartProducts(user):
         return bot_models.Cart.objects.filter(active=True).get(user=user).products.all()
     else:
         return False
+
+
+def removeFromCart(user, product):
+    user = bot_models.TelegramUser.objects.get(telegramId=user)
+
+    cart = bot_models.Cart.objects.filter(active=True).get(user=user)
+    cart.products.remove(product)
+    
+    return True
+
+
+def createOrder(user):
+    user = bot_models.TelegramUser.objects.get(telegramId=user)
+
+    cart = bot_models.Cart.objects.filter(active=True).get(user=user)
+
+    order = bot_models.Order()
+    order.user = user
+    order.cart = cart
+    order.save()
+
+    return True
+
+
+def updateOrder()
