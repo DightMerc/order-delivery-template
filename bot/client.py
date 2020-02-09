@@ -62,14 +62,6 @@ def getUser(user):
         return False
 
 
-def userSetLanguage(user, language):
-
-    current_user = bot_models.TelegramUser.objects.get(telegramId=int(user))
-    current_user.language = language
-
-    current_user.save()
-
-
 def GetCategories():
 
     return bot_models.Category.objects.filter(active=True)
@@ -168,6 +160,59 @@ def createOrder(user):
 
 
 def updateOrder(user, delivery=None, geoX=None, geoY=None, time=None, click=None, payme=None, cash=None, active=None, activated=None):
-    order = bot_models.Order.objects.filter(active=False)
-    if not delivery == None:
-        
+    order = bot_models.Order.objects.filter(active=False).order_by("-created").first()
+
+    if delivery is not None:
+        order.delivery = delivery
+        order.save()
+    
+    if geoX is not None:
+        if geoY is not None:
+            order.geoX = geoX
+            order.geoY - geoY
+            order.save()
+
+    if time is not None:
+        order.time = time
+        order.save()
+
+    if click is not None:
+        order.click = click
+        order.save()
+
+    if payme is not None:
+        order.payme = payme
+        order.save()
+
+    if cash is not None:
+        order.cash = cash
+        order.save()
+
+    if active is not None:
+        order.active = active
+        order.save()
+
+    if activated is not None:
+        order.activated = activated
+        order.save()
+
+    return
+
+
+def userUpdate(user, realName=None, phone=None, language=None):
+    current_user = bot_models.TelegramUser.objects.get(telegramId=int(user))
+    if realName is not None:
+        current_user.realName = realName
+        current_user.save()
+
+    if phone is not None:
+        current_user.phone = int(phone)
+        current_user.save()
+
+    if language is not None:
+        current_user.language = language
+        current_user.save()
+
+
+def GetPaymentToken(system):
+    return bot_models.PaySystem.objects.get(title=system).token

@@ -12,3 +12,13 @@ class User(StatesGroup):
 
 class Order(StatesGroup):
     started = State() 
+    phone = State()
+    delivery = State()
+    selfOut = State()
+    deliveryOut = State()
+    closeTime = State()
+    setTime = State()
+    card = State()
+    pay = State()
+    preCheckout = State()
+    

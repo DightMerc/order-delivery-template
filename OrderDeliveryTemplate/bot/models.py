@@ -56,7 +56,7 @@ class TelegramUser(models.Model):
     language = models.CharField("Язык", max_length=5, default="ru")
     full_name = models.CharField("Имя в телеграм", max_length=255, default="", null=False)
 
-    readlName = models.CharField("Имя", max_length=255, default="", null=True, blank=True)
+    realName = models.CharField("Имя", max_length=255, default="", null=True, blank=True)
 
     created_date = models.DateTimeField(default=timezone.now)
 
@@ -92,20 +92,22 @@ class Order(models.Model):
 
     created = models.DateTimeField("Дата создания заказа", default=timezone.now, null=False, blank=False)
 
-    delivery = models.BooleanField("Статус активности", default=True)
+    delivery = models.BooleanField("Доставка", default=False)
 
     geoX = models.IntegerField("Локация X", null=True, blank=True)
     geoY = models.IntegerField("Локация X", null=True, blank=True)
 
-    time = models.CharField("Время", max_length=256, null=False, blank=False)
+    time = models.CharField("Время", max_length=256, null=True, blank=True)
 
-    click = models.BooleanField("Оплачено Click", default=True)
-    payMe = models.BooleanField("Оплачено PayMe", default=True)
-    cash = models.BooleanField("Оплачено наличными", default=True)
+    click = models.BooleanField("Оплачено Click", default=False)
+    payMe = models.BooleanField("Оплачено PayMe", default=False)
+    cash = models.BooleanField("Оплачено наличными", default=False)
 
-    active = models.BooleanField("Подтвержден", default=True)
+    active = models.BooleanField("Подтвержден", default=False)
 
     activated = models.DateTimeField("Дата подтверждения заказа", default=None, null=True, blank=True)
+
+    phone = models.PositiveIntegerField("Номер телефона", null=True, blank=True)
 
     class Meta:
         verbose_name = "Заказ"

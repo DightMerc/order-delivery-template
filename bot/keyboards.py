@@ -102,5 +102,88 @@ def CurrentProductKeyboard(user, product, category):
             InlineKeyboardButton('📥 Добавить в корзину', callback_data=f"{product}")
             ).add(InlineKeyboardButton('🏡 Назад', callback_data=f"back {category}"))
 
+
+def BackKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+    else:
+        return InlineKeyboardMarkup().add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+
+
+def ContactKeyboard(user):
+    if client.getUserLanguage(user) == "ru":
+        return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Отправить свой контакт', request_contact=True)).add(
+            KeyboardButton('🏡 Назад'))
+    else:
+        return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Телефон рақамингизни юбориш', request_contact=True)).add(
+                KeyboardButton('🏡 Ортга'))
+
+
+def DeliveryKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('🙍‍♂️ Самовывоз', callback_data="self"),
+            InlineKeyboardButton('🚙 Доставка', callback_data="delivery")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+    else:
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('🙍‍♂️ Самовывоз', callback_data="self"),
+            InlineKeyboardButton('🚙 Доставка', callback_data="delivery")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+
+
+def TimeKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('🕘 В ближайшее время', callback_data="closeTime"),
+            InlineKeyboardButton('🕘 Установить время', callback_data="setTime")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+    else:
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('🕘 В ближайшее время', callback_data="closeTime"),
+            InlineKeyboardButton('🕘 Установить время', callback_data="setTime")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+
+
+def PaymentKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('💵 Наличные', callback_data="cash"),
+            InlineKeyboardButton('💳 Оплата картой', callback_data="card")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+    else:
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('💵 Наличные', callback_data="cash"),
+            InlineKeyboardButton('💳 Оплата картой', callback_data="card")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+
+
+def PaySystemKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('💳 PayMe', callback_data="payme"),
+            InlineKeyboardButton('💳 Click', callback_data="click")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+    else:
+        return InlineKeyboardMarkup().row(
+            InlineKeyboardButton('💳 PayMe', callback_data="payme"),
+            InlineKeyboardButton('💳 Click', callback_data="click")
+            ).add(InlineKeyboardButton('🏡 Назад', callback_data="back"))
+
+
+def BuyKeyboard(user):
+    lan = client.getUserLanguage(user)
+    if lan == "ru":
+        return InlineKeyboardMarkup().add(InlineKeyboardButton('Оплатить', callback_data='pay')
+        ).add(InlineKeyboardButton('🏡 Назад', callback_data='back'))
+    else:
+        return InlineKeyboardMarkup().add(InlineKeyboardButton('Оплатить', callback_data='pay')
+        ).add(InlineKeyboardButton('🏡 Назад', callback_data='back'))
+
 # if __name__ == "__main__":
 #     CategoriesKeyboard('ru')

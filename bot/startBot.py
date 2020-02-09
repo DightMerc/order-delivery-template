@@ -64,7 +64,7 @@ async def language_handler(callback_query: types.CallbackQuery, state: FSMContex
 
     await bot.answer_callback_query(callback_query.id)
 
-    client.userSetLanguage(user, data)
+    client.userUpdate(user, language=data)
     await states.User.main.set()
 
     await bot.send_chat_action(user, action="typing")
@@ -83,7 +83,7 @@ async def main_handler(callback_query: types.CallbackQuery, state: FSMContext):
     await bot.answer_callback_query(callback_query.id)
 
     if data in ["ru", "uz"]:
-        client.userSetLanguage(user, data)
+        client.userUpdate(user, language=data)
 
         await bot.send_chat_action(user, action="typing")
 
@@ -224,25 +224,264 @@ async def category_handler(callback_query: types.CallbackQuery, state: FSMContex
     elif data == "empty":
         await bot.answer_callback_query(callback_query.id)
 
-    elif data = "order":
+    elif data == "order":
         await states.Order.started.set()
 
         client.createOrder(user)
 
         text = Messages(user)['name']
-        markup = None
+        markup = keyboards.BackKeyboard(user)
         await bot.send_message(user, text, reply_markup=markup)
         await bot.delete_message(user, callback_query.message.message_id)
 
 
 @dp.message_handler(state=states.Order.started)
-async def process_start_command(message: types.Message, state: FSMContext):
+async def order_started_command(message: types.Message, state: FSMContext):
     user = message.from_user.id
 
     name = message.text
 
+    await states.Order.phone.set()
+
+    client.userUpdate(user, realName=name)
+
+    text = Messages(user)['phone']
+    markup = keyboards.ContactKeyboard(user)
+    await bot.send_message(user, text, reply_markup=markup)
+    await bot.delete_message(user, message.message_id - 1)
+
+
+@dp.callback_query_handler(state=states.Order.started)
+async def back_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+
+    await states.User.cart.set()
+
+    await bot.send_chat_action(user, action="typing")
+
+    products = client.getCartProducts(user)
+    if products:
+
+        product = products[0]
+
+        lan = client.getUserLanguage(user)
+
+        if lan=="ru":
+            text = Messages(user)['descriptionProduct'].format(product.ru, product.ruDescription, product.price)
+        else:
+            text = Messages(user)['descriptionProduct'].format(product.uz, product.uzDescription, product.price)
+
+        markup = keyboards.PaginationKeyboards(user, 0, products.count() - 1 , 1, products.count())
+
+        file = InputFile.from_url(mediaLink + product.photo.url)
+        if client.GetPhotoId(product.photo.url):
+            file = client.GetPhotoId(product.photo.url)
+            await bot.send_photo(user, file, caption=text, reply_markup=markup)
+        else:
+            fileId = await bot.send_photo(user, file, caption=text, reply_markup=markup)
+            client.SetPhotoId(product.photo.url, fileId.photo[0].file_id)
+
+        await bot.delete_message(user, callback_query.message.message_id)
+
+
+@dp.message_handler(state=states.Order.phone, content_types=types.ContentType.CONTACT)
+async def user_contact_handler(message: types.Message, state: FSMContext):
+
+    user = message.from_user.id
+
+    phone = str(message.contact.phone_number)
+
+    client.userUpdate(user, phone=phone.replace("+", ""))
+
+    await states.Order.delivery.set()
+
+    text = Messages(user)['delivery']
+    markup = keyboards.DeliveryKeyboard(user)
+    await bot.send_message(user, text, reply_markup=markup)
+    await bot.delete_message(user, message.message_id - 1)
+
+
+
+
+@dp.callback_query_handler(state=states.Order.delivery)
+async def delivery_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+    data = callback_query.data
+
+    await bot.answer_callback_query(callback_query.id)
+
+    if data == "back":
+        await states.Order.phone.set()
+
+        text = Messages(user)['phone']
+        markup = keyboards.ContactKeyboard(user)
+        await bot.send_message(user, text, reply_markup=markup)
+        await bot.delete_message(user, callback_query.message.message_id)
+
+    elif data == "self":
+        await states.Order.selfOut.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        client.updateOrder(user, delivery=False)
+
+        text = Messages(user)["outTime"]
+        markup = keyboards.TimeKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+
+@dp.callback_query_handler(state=states.Order.selfOut)
+async def selfout_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+    data = callback_query.data
+
+    await bot.answer_callback_query(callback_query.id)
+
+    if data == "back":
+        await states.Order.delivery.set()
+
+        text = Messages(user)['delivery']
+        markup = keyboards.DeliveryKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+        
+
+    elif data == "closeTime":
+        await states.Order.closeTime.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        client.updateOrder(user, time="Ближайшее время")
+
+        text = Messages(user)["payment"]
+        markup = keyboards.PaymentKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+    elif data == "setTime":
+        await states.Order.setTime.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        text = Messages(user)["setTime"]
+        markup = keyboards.BackKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+
+@dp.callback_query_handler(state=states.Order.closeTime)
+async def closeTime_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+    data = callback_query.data
+
+    await bot.answer_callback_query(callback_query.id)
+
+    if data == "back":
+        await states.Order.selfOut.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        text = Messages(user)["outTime"]
+        markup = keyboards.TimeKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+    elif data == "cash":
+        await states.User.main.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        client.updateOrder(user, cash=True)
+
+        text = Messages(user)['main']
+        markup = keyboards.MenuKeyboard(user, client.getCartCount(user))
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+    elif data == "card":
+        await states.Order.card.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        text = Messages(user)['choosePaySystem']
+        markup = keyboards.PaySystemKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+
+@dp.callback_query_handler(state=states.Order.card)
+async def card_handler(callback_query: types.CallbackQuery, state: FSMContext):
+    user = callback_query.from_user.id
+    data = callback_query.data
+
+    await bot.answer_callback_query(callback_query.id)
+
+    if data == "back":
+        await states.Order.closeTime.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        text = Messages(user)["payment"]
+        markup = keyboards.PaymentKeyboard(user)
+        await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+    elif data in ["payme", "click"]:
+        await states.Order.pay.set()
+
+        await bot.send_chat_action(user, action="typing")
+
+        if data == "click":
+            client.updateOrder(user, click=True)
+            token = GetPaymentToken("Click Test")
+
+        else:
+            client.updateOrder(user, payme=True)
+            token = client.GetPaymentToken("PayMe Test")
+
+        text = "Some Shit"
+
+        price = 100000
+        prices = [
+            types.LabeledPrice(label=text, amount=price * 100),
+        ]
+        await states.Order.preCheckout.set()
+
+        await bot.send_invoice(user, title='TRATATA',
+                            description=text,
+                            provider_token=token,
+                            currency='uzs',
+                            photo_url='https://telegra.ph/file/e90f7d3f8bc360f7fb731.png',
+                            photo_height=512,  # !=0/None or picture won't be shown
+                            photo_width=512,
+                            photo_size=512,
+                            is_flexible=False,  # True If you need to set up Shipping Fee
+                            prices=prices,
+                            #    need_shipping_address=True,
+                                # need_email=True,
+                                # need_name=True,
+                                # need_phone_number=True,
+                            start_parameter='cinema-system-payment',
+                            payload='HAPPY FRIDAYS COUPON')
+
+        await bot.delete_message(user, callback_query.message.message_id)
+
+
+        # text = Messages(user)["pay"]
+        # markup = keyboards.BuyKeyboard(user)
+        # await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+        
     
 
+
+@dp.message_handler(state=states.Order.phone)
+async def order_started_command(message: types.Message, state: FSMContext):
+    user = message.from_user.id
+
+    text = message.text
+
+    if text in ["🏡 Назад", "🏡 Ортга"]:
+        await states.Order.started.set()
+
+        client.createOrder(user)
+
+        text = Messages(user)['name']
+        markup = keyboards.BackKeyboard(user)
+        await bot.send_message(user, text, reply_markup=markup)
+        await bot.delete_message(user, message.message_id-1)
+
+    
 @dp.callback_query_handler(state=states.User.menu)
 async def category_handler(callback_query: types.CallbackQuery, state: FSMContext):
     user = callback_query.from_user.id
@@ -267,6 +506,9 @@ async def category_handler(callback_query: types.CallbackQuery, state: FSMContex
         text = Messages(user)['subMenu']
         markup = keyboards.ProductsKeyboard(user, data)
         await bot.edit_message_text(text, user, callback_query.message.message_id, reply_markup=markup)
+
+
+
 
 
 @dp.callback_query_handler(state=states.User.subMenu)

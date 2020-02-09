@@ -17,5 +17,11 @@ def Messages(user):
         'cartEmpty': client.getMessage(7, lan),
         'productRemoved': client.getMessage(8, lan),
         'name': client.getMessage(9, lan),
-
+        'phone': client.getMessage(10, lan),
+        'delivery': client.getMessage(11, lan),
+        'outTime': client.getMessage(12, lan),
+        'payment': client.getMessage(13, lan),
+        'setTime': client.getMessage(14, lan),
+        'choosePaySystem': client.getMessage(15, lan),
+        'pay': client.getMessage(16, lan),
     }
