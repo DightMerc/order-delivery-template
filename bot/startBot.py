@@ -239,7 +239,9 @@ async def category_handler(callback_query: types.CallbackQuery, state: FSMContex
 async def process_start_command(message: types.Message, state: FSMContext):
     user = message.from_user.id
 
-    name = text
+    name = message.text
+
+    
 
 @dp.callback_query_handler(state=states.User.menu)
 async def category_handler(callback_query: types.CallbackQuery, state: FSMContext):

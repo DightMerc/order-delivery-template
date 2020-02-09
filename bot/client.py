@@ -167,4 +167,7 @@ def createOrder(user):
     return True
 
 
-def updateOrder()
+def updateOrder(user, delivery=None, geoX=None, geoY=None, time=None, click=None, payme=None, cash=None, active=None, activated=None):
+    order = bot_models.Order.objects.filter(active=False)
+    if not delivery == None:
+        
